@@ -83,7 +83,15 @@ def add_config_validator(settings: dynaconf.base.LazySettings):
 @moe.hookimpl(trylast=True)
 def edit_new_items(items: list[LibItem]):
     """Copies and formats the path of an item after it has been added to the library."""
+    # Generate set of all albums in `items` to avoid duplicate copying.
+    albums_in_items = {item for item in items if isinstance(item, Album)}
+
     for item in items:
+        # Skip tracks and extras if their album is also being processed.
+        # This prevents double-copying since _copy_album already handles all
+        # tracks/extras.
+        if isinstance(item, (Track, Extra)) and item.album in albums_in_items:
+            continue
         copy_item(item)
 
 

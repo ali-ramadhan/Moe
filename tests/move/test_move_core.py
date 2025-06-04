@@ -506,6 +506,20 @@ class TestEditNewItems:
 
         mock_copy.assert_called_once_with(extra)
 
+    def test_album_with_tracks_and_extras_no_duplicate_copy(self, mock_copy):
+        """When album and its tracks/extras are in same batch, avoid duplicate copying.
+
+        See: https://github.com/orgs/MoeMusic/discussions/280
+        """
+        album = album_factory(num_tracks=2, num_extras=2)
+        mock_session = MagicMock()
+
+        items = [album] + list(album.tracks) + list(album.extras)
+
+        config.CONFIG.pm.hook.edit_new_items(session=mock_session, items=items)
+
+        mock_copy.assert_called_once_with(album)
+
 
 class TestPluginRegistration:
     """Test the `plugin_registration` hook implementation."""
